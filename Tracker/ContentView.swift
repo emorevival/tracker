@@ -49,6 +49,7 @@ struct ContentView: View {
         .onAppear {
             projects = loadProjects()
         }
+        
         .navigationBarTitle("Time Tracker")
         .padding(.all)
     }
@@ -83,21 +84,29 @@ struct SiriTrackMinutesOnProject: AppIntent {
     var projectName: String
     
     @Parameter(title: "Spent time")
-    var spentTime: Int
+    var spentTimeInMinutes: Int
     
     static var title: LocalizedStringResource = "Add X minutes on Y project"
-    static var description = IntentDescription("Adds X minutes for Y project to the tracker")
+    static var description = IntentDescription("Adds X minutes on Y project to the tracker")
     
     static var openAppWhenRun: Bool = true
     
     static var parameterSummary: some ParameterSummary {
-        Summary("Adds X minutes for Y project to the tracker")
+        Summary("Adds X minutes on Y project to the tracker")
     }
     
     @MainActor
     func perform() async throws -> some IntentResult {
-        
-        return .result(dialog: "Okay, added 1 to counter.")
+        let projects: [Project] = loadProjects()
+        print(projectName)
+        projects.forEach { project in
+            if project.projectName == projectName {
+                project.addTime(spentTimeInMinutes*60)
+            }
+            print("logged \(spentTimeInMinutes) min to \(projectName)")
+        }
+        saveProjects(projects)
+        return .result(dialog: "Okay, logged \(spentTimeInMinutes) minutes to \(projectName)")
     }
 }
 
